@@ -1,8 +1,15 @@
 package com.coolweather.app.util;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
 import com.coolweather.app.db.CoolWeatherDB;
@@ -68,6 +75,7 @@ public class Utility {
 
 	/**
 	 * 解析和处理服务器返回的区级信息
+	 * 
 	 * @param coolWeatherDB
 	 * @param response
 	 * @param cityId
@@ -75,10 +83,10 @@ public class Utility {
 	 */
 	public synchronized static boolean handleCountyResponse(
 			CoolWeatherDB coolWeatherDB, String response, int cityId) {
-		if(!TextUtils.isEmpty(response)){
+		if (!TextUtils.isEmpty(response)) {
 			String[] allCounties = response.split(",");
-			if(allCounties != null && allCounties.length > 0){
-				for(String c : allCounties){
+			if (allCounties != null && allCounties.length > 0) {
+				for (String c : allCounties) {
 					String[] array = c.split("\\|");
 					County county = new County();
 					county.setCountyCode(array[0]);
@@ -92,13 +100,14 @@ public class Utility {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * 解析服务器返回的JSON数据，并将解析的结果存储到本地
+	 * 
 	 * @param context
 	 * @param response
 	 */
-	public static void handleWeatherResponse(Context context, String response){
+	public static void handleWeatherResponse(Context context, String response) {
 		try {
 			JSONObject jsonObject = new JSONObject(response);
 			JSONObject weatherInfo = jsonObject.getJSONObject("weatherinfo");
@@ -108,8 +117,49 @@ public class Utility {
 			String temp2 = weatherInfo.getString("temp2");
 			String weatherDesp = weatherInfo.getString("weather");
 			String publishTime = weatherInfo.getString("ptime");
-		} catch (Exception e) {
-			// TODO: handle exception
+
+			saveWeatherInfo(context, cityName, weatherCode, temp1, temp2,
+					weatherDesp, publishTime);
+
+		} catch (JSONException e) {
+			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * 将服务器返回的所有天气信息存储到ShearedPreferences文件中
+	 * 
+	 * @param context
+	 *            上下文
+	 * @param cityName
+	 *            城市名
+	 * @param weatherCode
+	 *            城市标识代码
+	 * @param temp1
+	 *            最高温度/最低温度
+	 * @param temp2
+	 *            最低温度/最高温度
+	 * @param weatherDesp
+	 *            天气描述
+	 * @param publishTime
+	 *            发布时间(时)
+	 */
+	public static void saveWeatherInfo(Context context, String cityName,
+			String weatherCode, String temp1, String temp2, String weatherDesp,
+			String publishTime) {
+
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy年M月d日", Locale.CHINA);
+
+		SharedPreferences.Editor editor = PreferenceManager
+				.getDefaultSharedPreferences(context).edit();
+		editor.putBoolean("city_selected", true);
+		editor.putString("city_name", cityName);
+		editor.putString("weather_code", weatherCode);
+		editor.putString("temp1", temp1);
+		editor.putString("temp2", temp2);
+		editor.putString("weather_desp", weatherDesp);
+		editor.putString("publish_time", publishTime);
+		editor.putString("current_date", sdf.format(new Date()));
+		editor.commit();
 	}
 }

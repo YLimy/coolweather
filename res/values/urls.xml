@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <string name="url_weather_home">http://www.weather.com.cn</string>
+    <string name="url_city_list">http://www.weather.com.cn/data/list3/city.xml</string>
+</resources>
